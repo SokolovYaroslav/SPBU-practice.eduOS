@@ -8,7 +8,7 @@ LDFLAGS += -g
 endif
 
 CC = gcc
-CFLAGS += -std=c99 -I$(PWD) -Wall -Werror
+CFLAGS += -std=gnu99 -I$(PWD) -Wall -Werror
 
 KERNEL = os os/irq os/syscall os/sched os/asm_sched os/time
 
