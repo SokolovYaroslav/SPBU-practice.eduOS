@@ -8,6 +8,7 @@ typedef unsigned long irqmask_t;
 
 extern irqmask_t irq_disable(void);
 extern void irq_enable(irqmask_t mask);
+// extern int check_irq_disable(void);
 
 extern int irq_init(void);
 

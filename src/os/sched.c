@@ -22,6 +22,7 @@ static struct sched_task *new_task(void) {
 	for (int i = 0; i < ARRAY_SIZE(sched_task_queue.tasks); ++i) {
 		if (sched_task_queue.tasks[i].state == SCHED_FINISH) {
 			sched_task_queue.tasks[i].state = SCHED_READY;
+			sched_task_queue.tasks[i].id = i;
 			irq_enable(irq);
 			return &sched_task_queue.tasks[i];
 		}
@@ -32,8 +33,7 @@ static struct sched_task *new_task(void) {
 void task_tramp(sched_task_entry_t entry, void *arg) {
 	irq_enable(IRQ_ALL);
 	entry(arg);
-	sched();
-	abort();
+	os_exit();
 }
 
 static void task_init(struct sched_task *task) {
@@ -60,13 +60,21 @@ void sched_notify(struct sched_task *task) {
 	task->state = SCHED_READY;
 }
 
-void sched_wait(void) {//TODO: check irq_disable
+void sched_wait(void) {
 	sched_current()->state = SCHED_SLEEP;
 	TAILQ_REMOVE(&sched_task_queue.head, sched_current(), link);
 }
 
 struct sched_task *sched_current(void) {
 	return sched_task_queue.current;
+}
+
+struct sched_task *sched_get_task_by_id(int task_id) {
+	return &sched_task_queue.tasks[task_id];
+}
+
+void sched_delete_task(struct sched_task *task) {
+	TAILQ_REMOVE(&sched_task_queue.head, task, link);
 }
 
 static struct sched_task *next_task(void) {
