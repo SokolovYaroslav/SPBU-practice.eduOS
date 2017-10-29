@@ -109,7 +109,6 @@ void sched_init(void) {
 
 	struct sched_task *task = new_task();
 	task_init(task);
-	task->state = SCHED_READY;
 	TAILQ_INSERT_TAIL(&sched_task_queue.head, task, link);
 
 	sched_task_queue.idle = task;

@@ -47,10 +47,7 @@ static void do_task(void *input_arg) {
 
 	for (int i = 0; i < ARRAY_SIZE(app_list); ++i) {
 		if (!strcmp(argv[0], app_list[i].name)) {
-			/* TODO run as sched task V */
 			args->res = app_list[i].fn(argc, argv);
-			/* TODO exit */
-			/* TODO waitpid? V*/
 			return;
 		}
 	}
