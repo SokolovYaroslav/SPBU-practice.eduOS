@@ -23,12 +23,6 @@ typedef long(*sys_call_t)(int syscall,
 	x(write) \
 	x(read) \
 	x(halt) \
-<<<<<<< HEAD
-	x(waitpid) \
-	x(exit) \
-	x(clone) \
-
-=======
 	x(clone) \
 	x(waitpid) \
 	x(exit) \
@@ -37,7 +31,6 @@ typedef long(*sys_call_t)(int syscall,
 	x(sem_init) \
 	x(sem_use) \
 	x(sem_free) \
->>>>>>> 320ef84f289ce32881998886126a5282ca4bfa78
 
 
 #define ENUM_LIST(name) os_syscall_nr_ ## name,
