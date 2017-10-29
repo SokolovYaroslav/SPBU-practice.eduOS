@@ -19,7 +19,9 @@ extern int os_task_id(void);
 
 extern int os_sem_init(int cnt);
 
-extern int os_sem_use(int semid, int add);
+extern int os_sem_down(int semid);
+
+extern int os_sem_up(int semid);
 
 extern int os_sem_free(int semid);
 

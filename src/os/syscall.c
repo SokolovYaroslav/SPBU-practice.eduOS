@@ -29,7 +29,8 @@ typedef long(*sys_call_t)(int syscall,
 	x(wait) \
 	x(task_id) \
 	x(sem_init) \
-	x(sem_use) \
+	x(sem_up) \
+	x(sem_down) \
 	x(sem_free) \
 
 
@@ -169,11 +170,18 @@ static long sys_sem_init(int syscall,
 	return sem_init(arg1);
 }
 
-static long sys_sem_use(int syscall,
+static long sys_sem_down(int syscall,
 		unsigned long arg1, unsigned long arg2,
 		unsigned long arg3, unsigned long arg4,
 		void *rest) {
-	return sem_use(arg1, arg2);
+	return sem_down(arg1);
+}
+
+static long sys_sem_up(int syscall,
+	unsigned long arg1, unsigned long arg2,
+	unsigned long arg3, unsigned long arg4,
+	void *rest) {
+return sem_up(arg1);
 }
 
 static long sys_sem_free(int syscall,
@@ -241,8 +249,12 @@ int os_sem_init(int cnt) {
 	return os_syscall(os_syscall_nr_sem_init, cnt, 0, 0, 0, NULL);
 }
 
-int os_sem_use(int semid, int add) {
-	return os_syscall(os_syscall_nr_sem_use, semid, add, 0, 0, NULL);
+int os_sem_down(int semid) {
+	return os_syscall(os_syscall_nr_sem_down, semid, 0, 0, 0, NULL);
+}
+
+int os_sem_up(int semid) {
+	return os_syscall(os_syscall_nr_sem_up, semid, 0, 0, 0, NULL);
 }
 
 int os_sem_free(int semid) {

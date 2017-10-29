@@ -3,7 +3,9 @@
 
 extern int sem_init(int cnt);
 
-extern int sem_use(int semid, int add);
+extern int sem_down(int semid);
+
+extern int sem_up(int semid);
 
 extern int sem_free(int semid);
 

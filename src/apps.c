@@ -47,7 +47,7 @@ static void mutex_test_task(void *_arg) {
 		snprintf(msg, sizeof(msg), "%s: %d\n", __func__, os_task_id());
 		os_sys_write(msg);
 
-		os_sem_use(arg->semid, -1);
+		os_sem_down(arg->semid);
 
 		if (arg->cnt) {
 			os_sys_write("multiple process in critical section!");
@@ -58,7 +58,7 @@ static void mutex_test_task(void *_arg) {
 		os_wait();
 		--arg->cnt;
 
-		os_sem_use(arg->semid, +1);
+		os_sem_up(arg->semid);
 	}
 
 	/*os_exit();*/
