@@ -7,6 +7,7 @@
 #include <ucontext.h>
 
 enum sched_state {
+	SCHED_EMPTY,
 	SCHED_FINISH,
 	SCHED_READY,
 	SCHED_SLEEP,
@@ -18,19 +19,21 @@ typedef void (*sched_task_entry_t)(void *arg);
 struct sched_task {
 	TAILQ_ENTRY(sched_task) link;
 	ucontext_t ctx;
-	char stack[4096];
+	char stack[0x10000];
 	enum sched_state state;
-	int id;
 	struct sched_task *parent;
 };
+
+extern int get_task_id(struct sched_task *task);
+extern struct sched_task *get_task(int task_id);
+extern void remove_task(struct sched_task *task);
 
 extern struct sched_task *sched_add(sched_task_entry_t entry, void *arg);
 extern void sched_wait(void);
 extern void sched_notify(struct sched_task *task);
 
 extern struct sched_task *sched_current(void);
-extern struct sched_task *sched_get_task_by_id(int task_id);
-extern void sched_delete_task(struct sched_task *task);
+extern int sched_user_id(struct sched_task *task);
 
 extern void sched(void);
 
