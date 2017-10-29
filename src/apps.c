@@ -142,7 +142,6 @@ void shell(void *args) {
 			buffer[bytes] = '\0';
 		}
 
-		struct args args;
 		char *saveptr;
 		const char *comsep = "\n;";
 		struct params args;

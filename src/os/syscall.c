@@ -183,60 +183,6 @@ static long sys_sem_free(int syscall,
 	return sem_free(arg1);
 }
 
-static long sys_waitpid(int syscall,
-		unsigned long arg1, unsigned long arg2,
-		unsigned long arg3, unsigned long arg4,
-		void *rest) {
-	int task_id = (int)arg1;
-	struct sched_task *task = sched_get_task_by_id(task_id);
-	
-	irqmask_t cur = irq_disable();
-
-	while (task->state != SCHED_FINISH) {
-		sched_wait();
-		sched();
-	}
-
-	irq_enable(cur);
-
-	return 0;
-}
-
-static long sys_exit(int syscall,
-		unsigned long arg1, unsigned long arg2,
-		unsigned long arg3, unsigned long arg4,
-		void *rest) {
-	irqmask_t cur = irq_disable();
-
-	struct sched_task *task = sched_current();
-	task->state = SCHED_FINISH;
-	sched_delete_task(task);
-	sched_notify(task->parent);
-
-	irq_enable(cur);
-
-	sched();
-
-	return 0;
-}
-
-static long sys_clone(int syscall,
-		unsigned long arg1, unsigned long arg2,
-		unsigned long arg3, unsigned long arg4,
-		void *rest) {
-	sched_task_entry_t entry = (sched_task_entry_t) arg1;
-	void *arg = (void*) arg2;
-
-	irqmask_t cur = irq_disable();
-
-	struct sched_task *task = sched_add(entry, arg);
-	task->parent = sched_current();
-
-	irq_enable(cur);
-
-	return task->id;
-}
-
 #define TABLE_LIST(name) sys_ ## name,
 static const sys_call_t sys_table[] = {
 	SYSCALL_X(TABLE_LIST)
