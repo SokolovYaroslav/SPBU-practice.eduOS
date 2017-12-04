@@ -2,6 +2,7 @@
 #ifndef EDUOS_OS_SCHED_H
 #define EDUOS_OS_SCHED_H
 
+#include "os/sem.h"
 #include "third-party/queue.h"
 
 #include <ucontext.h>
@@ -22,6 +23,7 @@ struct sched_task {
 	char stack[0x10000];
 	enum sched_state state;
 	struct sched_task *parent;
+	struct wq *wq;
 };
 
 extern int get_task_id(struct sched_task *task);
@@ -29,7 +31,7 @@ extern struct sched_task *get_task(int task_id);
 extern void remove_task(struct sched_task *task);
 
 extern struct sched_task *sched_add(sched_task_entry_t entry, void *arg);
-extern void sched_wait(void);
+extern void sched_wait(struct wq *wq);
 extern void sched_notify(struct sched_task *task);
 
 extern struct sched_task *sched_current(void);

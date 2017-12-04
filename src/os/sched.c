@@ -80,18 +80,32 @@ struct sched_task *sched_add(sched_task_entry_t entry, void *arg) {
 
 void sched_notify(struct sched_task *task) {
 	irqmask_t irq = irq_disable();
-	task->state = SCHED_READY;
-	TAILQ_INSERT_TAIL(&sched_task_queue.head, task, link);
+
+	if (task->state == SCHED_SLEEP) { 
+		if (task->wq != NULL) {
+			TAILQ_REMOVE(&task->wq->head, task, link);
+		}
+		task->state = SCHED_READY;
+		TAILQ_INSERT_TAIL(&sched_task_queue.head, task, link);
+	}
+	
 	irq_enable(irq);
 }
 
-void sched_wait(void) {
+void sched_wait(struct wq *wq) {
 	irqmask_t irq = irq_disable();
 	struct sched_task *cur = sched_current();
 	if (cur->state == SCHED_READY) {
 		TAILQ_REMOVE(&sched_task_queue.head, sched_current(), link);
 	}
 	cur->state = SCHED_SLEEP;
+	if (cur->wq != NULL) {
+		TAILQ_REMOVE(&cur->wq->head, cur, link);
+	}
+	if (wq != NULL) {
+		TAILQ_INSERT_TAIL(&wq->head, cur, link);
+	}
+	cur->wq = wq;
 	irq_enable(irq);
 }
 

@@ -68,7 +68,7 @@ static long sys_read(int syscall,
 	int bytes = errwrap(read(STDIN_FILENO, buffer, size));
 	while (bytes == -EAGAIN) {
 		irq_set_hnd(read_irq_hnd, sched_current());
-		sched_wait();
+		sched_wait(NULL);
 		sched();
 		bytes = errwrap(read(STDIN_FILENO, buffer, size));
 	}
@@ -107,7 +107,7 @@ static long sys_waitpid(int syscall,
 	struct sched_task *task = get_task(task_id);
 
 	while (task->state != SCHED_FINISH) {
-		sched_wait();
+		sched_wait(NULL);
 		sched();
 	}
 

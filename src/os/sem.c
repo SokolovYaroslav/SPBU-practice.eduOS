@@ -11,41 +11,54 @@
 
 #include "os/irq.h"
 
+
 struct sem {
 	bool used;
+	int semid;
 	int cnt;
 	int cnt_max;
-	TAILQ_HEAD(listhead, sched_task) head;
+	struct wq wq;
 };
 
 struct sem g_sem;
 
 int sem_init(int cnt) {
-	if (g_sem.used) {
+	if (cnt < 1) {
+		return -EINVAL;
+	}
+	struct sem *sem = NULL;
+	irqmask_t irq = irq_disable();
+	if (!g_sem.used) {
+		sem = &g_sem;
+		sem->used = true;
+		TAILQ_INIT(&sem->wq.head);
+	}
+	irq_enable(irq);
+	
+	if (!sem) {
 		return -ENOMEM;
 	}
 
-	g_sem.used = true;
-	g_sem.cnt_max = cnt;
-	g_sem.cnt = cnt;
+	sem->cnt_max = cnt;
+	sem->cnt = cnt;
 
 	return 0;
 }
 
 int sem_down(int semid) {
+	irqmask_t irq = irq_disable();
 	if (semid != 0 || !g_sem.used) {
+		irq_enable(irq);
 		return -EINVAL;
 	}
 
-	irqmask_t irq = irq_disable();
 	while (true) {
 		if (g_sem.cnt > 0) {
 			g_sem.cnt--;
-			return 0;
+			break;
 		}
 		else {
-			TAILQ_INSERT_TAIL(&g_sem.head, sched_current(), link);
-			sched_wait();
+			sched_wait(&g_sem.wq);
 			sched();
 		}
 	}
@@ -55,16 +68,17 @@ int sem_down(int semid) {
 }
 
 int sem_up(int semid) {
+	irqmask_t irq = irq_disable();
 	if (semid != 0 || !g_sem.used) {
+		irq_enable(irq);
 		return -EINVAL;
 	}
 	
-	irqmask_t irq = irq_disable();
-	g_sem.cnt++;
-	struct sched_task *other = TAILQ_FIRST(&g_sem.head);
-	if (other) {
-		TAILQ_REMOVE(&g_sem.head, other, link);
-		sched_notify(other);
+	if (g_sem.cnt < g_sem.cnt_max) {
+		g_sem.cnt++;
+	}
+	if (!TAILQ_EMPTY(&g_sem.wq.head)) {
+		sched_notify(TAILQ_FIRST(&g_sem.wq.head));
 	}
 	irq_enable(irq);
 
